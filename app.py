@@ -93,7 +93,7 @@ def encontrar_temperatura_face_fria(Tq, To, L_total, k_func_str, emissividade, w
         if k is None or k <= 0: return None, None, False
 
         # Lógica de condução apenas para Superfície Plana
-        fator_seguranca = 1.1 # Adiciona 10%
+        fator_seguranca = 1.2 # Adiciona 10%
         q_conducao = (k * (Tq - Tf) / L_total) * fator_seguranca
         
         Tf_K, To_K = Tf + 273.15, To + 273.15
@@ -274,6 +274,7 @@ st.markdown("---")
 st.markdown("""
 > **Nota:** Os cálculos são realizados de acordo com as práticas recomendadas pelas normas **ASTM C680** e **ISO 12241**, em conformidade com os procedimentos da norma brasileira **ABNT NBR 16281**.
 """)
+
 
 
 
