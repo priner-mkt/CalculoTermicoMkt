@@ -56,31 +56,35 @@ def calcular_k(k_func_str, T_media):
         return None
 
 def calcular_h_conv(Tf, To, wind_speed_ms=0):
-    Tf_K, To_K = Tf + 273.15, To + 273.15
-    T_film_K = (Tf_K + To_K) / 2
-    g, beta = 9.81, 1 / T_film_K
-    nu = 1.589e-5 * (T_film_K / 293.15)**0.7
-    alpha = 2.25e-5 * (T_film_K / 293.15)**0.8
-    k_ar = 0.0263
-    Pr = nu / alpha
-    delta_T = abs(Tf - To)
-    if delta_T == 0: return 0
-    
-    # Lógica apenas para Superfície Plana
-    L_c = 1.0 
-    
+    # Se houver vento, mantém a lógica de convecção forçada (que já é mais direta)
     if wind_speed_ms >= 1.0:
+        Tf_K, To_K = Tf + 273.15, To + 273.15
+        T_film_K = (Tf_K + To_K) / 2
+        nu = 1.589e-5 * (T_film_K / 293.15)**0.7
+        alpha = 2.25e-5 * (T_film_K / 293.15)**0.8
+        k_ar = 0.0263
+        Pr = nu / alpha
+        L_c = 1.0
         Re = (wind_speed_ms * L_c) / nu
         if Re < 5e5:
             Nu = 0.664 * (Re**0.5) * (Pr**(1/3))
         else:
             Nu = (0.037 * (Re**0.8) - 871) * (Pr**(1/3))
-    else: # Convecção Natural
-        L_c = 0.1 # Characteristic length for natural convection on a flat plate
-        Ra = (g * beta * delta_T * L_c**3) / (nu * alpha)
-        Nu = 0.27 * Ra**(1/4)
-    
-    return (Nu * k_ar) / L_c
+        return (Nu * k_ar) / L_c
+
+    # Lógica simplificada para Convecção Natural (vento < 1.0 m/s)
+    else:
+        delta_T = abs(Tf - To)
+        if delta_T < 0.01: # Evita divisão por zero ou valores muito pequenos
+            return 0
+        
+        # Para uma superfície plana genérica, assumir altura de 1m (L_c = 1.0) é razoável.
+        Lc = 1.0
+        
+        # Fórmula empírica simplificada
+        h = 1.42 * ((delta_T / Lc)**0.25)
+        
+        return h
 
 def encontrar_temperatura_face_fria(Tq, To, L_total, k_func_str, emissividade, wind_speed_ms=0):
     Tf = To + 10.0
@@ -331,6 +335,7 @@ with abas[1]:
                 else:
                     st.session_state.calculo_frio_realizado = False
                     st.error("❌ Não foi possível encontrar uma espessura que evite condensação até 500 mm.")
+
 
 
 
